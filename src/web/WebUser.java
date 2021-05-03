@@ -7,6 +7,7 @@ public class WebUser {
     private String userUUID = null;
     private WebSocket userSocket = null;
     private String curRoom = null;
+    private String username = null;
 
     public WebUser() {
 
@@ -39,5 +40,13 @@ public class WebUser {
 
     public void setUUID(String UUID) {
         this.userUUID = UUID;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
