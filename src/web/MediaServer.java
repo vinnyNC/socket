@@ -66,6 +66,17 @@ public class MediaServer extends WebSocketServer {
                 userList.add(newUser);
                 myLog("[OLD USER] " + newUser.getUUID() + " - " + newUser.getUserSocket().getRemoteSocketAddress(), 1);
             }
+        } else if (command.equalsIgnoreCase("SET_USERNAME")) {
+            //SET_USERNAME: (UUID), USERNAME
+            String pUUID = args.substring(0, args.indexOf(","));
+            String pUser = args.substring(args.indexOf(",") + 2);
+            myLog("[USERNAME SET] UUID: " + pUUID + " || WebSocket: " + webSocket.getRemoteSocketAddress().toString() + " || Username: " + pUser, 2);
+            for (int i = 0; i < userList.size(); i++) {
+                String temp_uuid = userList.get(i).getUUID();
+                if (temp_uuid.equalsIgnoreCase(pUUID)) {
+                    userList.get(i).setUsername(pUser);
+                }
+            }
         }
     }
 
