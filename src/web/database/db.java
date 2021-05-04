@@ -82,4 +82,23 @@ public class db {
         }
         return true;
     }
+
+    public String getRoomList() {
+        String sql = "SELECT * FROM rooms";
+        String results = "[ROOM_LIST]";
+
+        try {
+            Statement sm = con.createStatement();
+            ResultSet rs = sm.executeQuery(sql);
+
+            while (rs.next()) {
+                String temp = "['" + rs.getString("name") + "']";
+                results += temp;
+            }
+            return results;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error-EXCEPTION";
+        }
+    }
 }

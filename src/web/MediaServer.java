@@ -77,6 +77,11 @@ public class MediaServer extends WebSocketServer {
                     userList.get(i).setUsername(pUser);
                 }
             }
+        } else if (command.equalsIgnoreCase("ROOMS")) {
+            if (args.equalsIgnoreCase("GET_LIST")) {
+                myLog("Sending room list to " + webSocket.getRemoteSocketAddress().toString(), 3);
+                webSocket.send(myDB.getRoomList());
+            }
         }
     }
 
