@@ -92,7 +92,9 @@ public class db {
             ResultSet rs = sm.executeQuery(sql);
 
             while (rs.next()) {
-                String temp = "['" + rs.getString("name") + "']";
+                String roomName = rs.getString("name").replace(" ", "_");
+                String temp = " ['" + roomName + "','" + rs.getString("room_uuid") + "']";
+
                 results += temp;
             }
             return results;
