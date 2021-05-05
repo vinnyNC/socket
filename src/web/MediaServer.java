@@ -17,6 +17,7 @@ public class MediaServer extends WebSocketServer {
      static final int LOG_LEVEL = 3;
      private db myDB = new db();
      private ArrayList<WebUser> userList = new ArrayList<>();
+     private ArrayList<Room> roomList = new ArrayList<>();
 
     public MediaServer(InetSocketAddress address) {
         super(address);
@@ -82,6 +83,10 @@ public class MediaServer extends WebSocketServer {
                 myLog("Sending room list to " + webSocket.getRemoteSocketAddress().toString(), 3);
                 webSocket.send(myDB.getRoomList());
             }
+        } else if (command.equalsIgnoreCase("JOIN_ROOM")) {
+            checkRoomExists(args);
+            WebUser tUser = getUser(webSocket.getRemoteSocketAddress());
+            userJoinRoom(tUser, args);
         }
     }
 
@@ -130,5 +135,40 @@ public class MediaServer extends WebSocketServer {
         }
 
         return saltStr;
+    }
+
+    public WebUser getUser(InetSocketAddress addr) {
+        myLog("Searching for user matching address: " + addr.toString(), 3);
+        for (int i = 0; i < userList.size(); i++) {
+            if (userList.get(i).getUserSocket().getRemoteSocketAddress() == addr) {
+                return userList.get(i);
+            }
+        }
+        return null;
+    }
+
+    public void userJoinRoom(WebUser wu, String roomID) {
+        myLog("Adding user (" + wu.getUUID() + ") to room (" + roomID + ")", 2);
+        String owner = myDB.getRoomOwner(roomID);
+        for (int i = 0; i < roomList.size(); i++) {
+            if (roomList.get(i).getRoomID().equalsIgnoreCase(roomID)) {
+                roomList.get(i).addUser(wu);
+            }
+        }
+
+        if (wu.getUUID().equalsIgnoreCase(owner)) {
+            wu.getUserSocket().send("isOwner");
+        }
+    }
+
+    public boolean checkRoomExists(String roomID) {
+        myLog("Checking if room exists (" + roomID + ")", 2);
+        for (int i = 0; i < roomList.size(); i++) {
+            if (roomList.get(i).getRoomID().equalsIgnoreCase(roomID)) {
+                return true;
+            }
+        }
+        roomList.add(new Room(roomID));
+        return false;
     }
 }
