@@ -149,10 +149,15 @@ public class MediaServer extends WebSocketServer {
 
     public void userJoinRoom(WebUser wu, String roomID) {
         myLog("Adding user (" + wu.getUUID() + ") to room (" + roomID + ")", 2);
+        String owner = myDB.getRoomOwner(roomID);
         for (int i = 0; i < roomList.size(); i++) {
             if (roomList.get(i).getRoomID().equalsIgnoreCase(roomID)) {
                 roomList.get(i).addUser(wu);
             }
+        }
+
+        if (wu.getUUID().equalsIgnoreCase(owner)) {
+            wu.getUserSocket().send("isOwner");
         }
     }
 

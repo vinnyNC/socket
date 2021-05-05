@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class Room {
 
     private String room_id;
+    private String owner_id;
     ArrayList<WebUser> users = new ArrayList<>();
 
     public Room(String id) {

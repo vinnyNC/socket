@@ -103,4 +103,21 @@ public class db {
             return "error-EXCEPTION";
         }
     }
+
+    public String getRoomOwner(String roomID) {
+        String sql = "SELECT owner_uuid FROM rooms WHERE room_uuid='" + roomID + "'";
+
+        try {
+            Statement sm = con.createStatement();
+            ResultSet rs = sm.executeQuery(sql);
+
+            while (rs.next()) {
+                return rs.getString("owner_uuid");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "null";
+        }
+        return "null";
+    }
 }
