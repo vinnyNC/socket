@@ -106,7 +106,31 @@ public class MediaServer extends WebSocketServer {
             String roomID = args.substring(args.indexOf("[") + 2, args.indexOf("]") - 1);
             String msg = args.substring(args.indexOf("]") + 1);
             WebUser author = getUser(webSocket.getRemoteSocketAddress());
-            roomSendChat(roomID, msg, author.getUUID());
+            if (msg.trim().startsWith("/source")) {
+                if (author.getUUID().equalsIgnoreCase(myDB.getRoomOwner(roomID))) {
+                    String url = msg.substring(8);
+                    roomAction(roomID, "src: " + url);
+                }
+            } else {
+                roomSendChat(roomID, msg, author.getUUID());
+            }
+        } else if (command.equalsIgnoreCase("JOIN_REQ")) {
+            //webSocket.send("JOIN_REQ_RESP: " + checkRoomExists(args));
+            boolean foundRoom =  false;
+            for (int i = 0; i < roomList.size(); i++) {
+                if (roomList.get(i).getRoomID().equalsIgnoreCase(args.trim())) {
+                    webSocket.send("JOIN_REQ_RESP: true");
+                    foundRoom = true;
+                }
+            }
+            if (!foundRoom) {
+                webSocket.send("JOIN_REQ_RESP: false");
+            }
+        }else if (command.equalsIgnoreCase("CREATE_ROOM")) {
+            String room_uuid = genRoomUUIDString().trim();
+            myDB.createRoom(room_uuid, getUser(webSocket.getRemoteSocketAddress()).getUUID(), args);
+            System.out.println("TRY: " + room_uuid);
+            webSocket.send("CREATE_ROOM_SUCCESS: " + room_uuid);
         }
     }
 
@@ -122,6 +146,11 @@ public class MediaServer extends WebSocketServer {
         myLog("DB Status: " + myDB.connect(), 1);
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);
+
+        ArrayList<String> res = myDB.getRoomListInternal();
+        for (String r: res) {
+            checkRoomExists(r);
+        }
     }
 
     public void roomAction(String roomID, String msg) {
@@ -171,7 +200,26 @@ public class MediaServer extends WebSocketServer {
                 status = true;
             }
         }
+        return saltStr;
+    }
 
+    public String genRoomUUIDString() {
+        boolean status = false;
+        String saltStr = "";
+        while (!status) {
+            saltStr = "";
+            String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            StringBuilder salt = new StringBuilder();
+            Random rnd = new Random();
+            while (salt.length() < 18) { // length of the random string.
+                int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+                salt.append(SALTCHARS.charAt(index));
+            }
+            saltStr = salt.toString();
+            if (!myDB.checkRoomUUID(saltStr)) {
+                status = true;
+            }
+        }
         return saltStr;
     }
 

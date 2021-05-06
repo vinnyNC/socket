@@ -1,6 +1,7 @@
 package web.database;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class db {
     Connection con = null;
@@ -39,7 +40,7 @@ public class db {
     }
 
     public boolean checkRoomUUID(String uuid) {
-        String sql = "SELECT * FROM room WHERE room_uuid='" + uuid + "'";
+        String sql = "SELECT * FROM rooms WHERE room_uuid='" + uuid + "'";
         try {
             Statement sm = con.createStatement();
             ResultSet rs = sm.executeQuery(sql);
@@ -83,6 +84,22 @@ public class db {
         return true;
     }
 
+    public boolean createRoom(String room_uuid, String owner_uuid, String name) {
+        String sql = "INSERT INTO rooms(room_uuid, owner_uuid, name) VALUES(?, ?, ?)";
+
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, room_uuid);
+            ps.setString(2, owner_uuid);
+            ps.setString(3, name);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     public String getRoomList() {
         String sql = "SELECT * FROM rooms";
         String results = "[ROOM_LIST]";
@@ -101,6 +118,24 @@ public class db {
         } catch (Exception e) {
             e.printStackTrace();
             return "error-EXCEPTION";
+        }
+    }
+
+    public ArrayList<String> getRoomListInternal() {
+        String sql = "SELECT * FROM rooms";
+        ArrayList<String> results = new ArrayList<>();
+
+        try {
+            Statement sm = con.createStatement();
+            ResultSet rs = sm.executeQuery(sql);
+
+            while (rs.next()) {
+                results.add(rs.getString("room_uuid"));
+            }
+            return results;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
