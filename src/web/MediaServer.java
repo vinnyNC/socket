@@ -46,6 +46,10 @@ public class MediaServer extends WebSocketServer {
             }
         }
         myLog("Connection Closed: " + webSocket.getRemoteSocketAddress() + " - Code: " + i + " - Reason: " + s, 2);
+
+        for (int j = 0; j < roomList.size(); j++) {
+            roomList.get(j).removeUser(webSocket.getRemoteSocketAddress().toString());
+        }
     }
 
     @Override
@@ -87,6 +91,22 @@ public class MediaServer extends WebSocketServer {
             checkRoomExists(args);
             WebUser tUser = getUser(webSocket.getRemoteSocketAddress());
             userJoinRoom(tUser, args);
+        } else if (command.equalsIgnoreCase("ROOM_OWNER_ACTION")) {
+            String roomID = args.substring(1, args.indexOf("]"));
+            String cmd = args.substring(args.indexOf("]") + 1);
+            if (cmd.equalsIgnoreCase("PAUSE")) {
+                roomAction(roomID, "PAUSE");
+            } else if (cmd.equalsIgnoreCase("PLAY")) {
+                roomAction(roomID, "PLAY");
+            } else if (cmd.contains("TIME")) {
+                String curTime = cmd.substring(cmd.indexOf("=") + 1);
+                roomAction(roomID, "ROOM_CUR_TIME: " + curTime);
+            }
+        } else if (command.equalsIgnoreCase("CHAT_MSG")) {
+            String roomID = args.substring(args.indexOf("[") + 2, args.indexOf("]") - 1);
+            String msg = args.substring(args.indexOf("]") + 1);
+            WebUser author = getUser(webSocket.getRemoteSocketAddress());
+            roomSendChat(roomID, msg, author.getUUID());
         }
     }
 
@@ -102,6 +122,24 @@ public class MediaServer extends WebSocketServer {
         myLog("DB Status: " + myDB.connect(), 1);
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);
+    }
+
+    public void roomAction(String roomID, String msg) {
+        Room temp;
+        for (int i = 0; i < roomList.size(); i++) {
+            if (roomList.get(i).getRoomID().equalsIgnoreCase(roomID)) {
+                roomList.get(i).sendCMD(msg);
+            }
+        }
+    }
+
+    public void roomSendChat(String roomID, String msg, String author) {
+        Room temp;
+        for (int i = 0; i < roomList.size(); i++) {
+            if (roomList.get(i).getRoomID().equalsIgnoreCase(roomID)) {
+                roomList.get(i).sendChat(msg, author);
+            }
+        }
     }
 
     public static void myLog(String msg, int level) {
@@ -157,6 +195,7 @@ public class MediaServer extends WebSocketServer {
         }
 
         if (wu.getUUID().equalsIgnoreCase(owner)) {
+            myLog("Sending owner message", 3);
             wu.getUserSocket().send("isOwner");
         }
     }
