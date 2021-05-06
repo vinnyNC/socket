@@ -18,16 +18,17 @@ public class MediaServer extends WebSocketServer {
      private db myDB = new db();
      private ArrayList<WebUser> userList = new ArrayList<>();
      private ArrayList<Room> roomList = new ArrayList<>();
+     private static WebSocketServer server = null;
 
     public MediaServer(InetSocketAddress address) {
         super(address);
     }
 
     public static void main(String[] args) {
-        String host = "localhost";
+        String host = "::";
         int port = 8887;
 
-        WebSocketServer server = new MediaServer(new InetSocketAddress(host, port));
+        server = new MediaServer(new InetSocketAddress(host, port));
         server.run();
     }
 
@@ -142,7 +143,7 @@ public class MediaServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-        myLog("Server Started", 1);
+        myLog("Server Started (" + server.getAddress().toString() + ")", 1);
         myLog("DB Status: " + myDB.connect(), 1);
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);

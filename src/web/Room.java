@@ -22,6 +22,10 @@ public class Room {
 
     public void addUser(WebUser u) {
         boolean status = false;
+        u.getUserSocket().send("[ROOM_CMD]['" + curStatus + "']");
+        u.getUserSocket().send("[ROOM_CMD]['ROOM_CUR_TIME: " + curTime + "']");
+        u.getUserSocket().send("[ROOM_CMD]['src:  " + curSource + "']");
+
         for (int i = 0; i < users.size(); i++) {
             if (users.get(i) == u) {
                 status = true;
@@ -29,9 +33,6 @@ public class Room {
         }
         if (!status) {
             users.add(u);
-            u.getUserSocket().send("[ROOM_CMD]['" + curStatus + "']");
-            u.getUserSocket().send("[ROOM_CMD]['ROOM_CUR_TIME: " + curTime + "']");
-            u.getUserSocket().send("[ROOM_CMD]['src:  " + curSource + "']");
         }
     }
 
